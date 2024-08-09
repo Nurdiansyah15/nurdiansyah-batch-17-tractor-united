@@ -17,4 +17,4 @@
 - Run commands: `php artisan jwt:secret` for generate jwt secret key.
 
 ## Postman Documentation
-- [Postman Collection](https://documenter.getpostman.com/view/33287012/2sA3s3GWG5)
+- [Postman Collection](https://documenter.getpostman.com/view/33287012/2sA3s3GWQs)
