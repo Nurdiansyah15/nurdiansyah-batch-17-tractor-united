@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Utils\ResponseFormator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
@@ -34,12 +35,18 @@ class ProductController extends Controller
                 'name' => 'string|required',
                 'category_id' => 'numeric|required',
                 'price' => 'numeric|required',
-                'image' => 'string|required'
+                'image' => 'image:jpeg,png,jpg,gif,svg|max:2048|required'
             ]);
             $category = Category::where('id', $fields['category_id'])->first();
             if (!$category) {
                 return ResponseFormator::create(400, "Category ID doesn't match any category");
             }
+
+            $uploadFolder = 'products';
+            $image = $request->file('image');
+            $image_uploaded_path = $image->store($uploadFolder, 'public');
+            $fields["image"] = Storage::url($image_uploaded_path);
+
             $product = Product::create($fields);
             if (!$product) {
                 return ResponseFormator::create(501, "Internal Server Error");
@@ -61,12 +68,29 @@ class ProductController extends Controller
                 'name' => 'string',
                 'category_id' => 'numeric',
                 'price' => 'numeric',
-                'image' => 'string'
+                'image' => 'image:jpeg,png,jpg,gif,svg|max:2048'
             ]);
-            $category = Category::where('id', $fields['category_id'])->first();
-            if (!$category) {
-                return ResponseFormator::create(400, "Category ID doesn't match any category");
+
+            if (isset($fields['category_id'])) {
+                $category = Category::where('id', $fields['category_id'])->first();
+                if (!$category) {
+                    return ResponseFormator::create(400, "Category ID doesn't match any category");
+                }
             }
+
+            if (isset($fields['image'])) {
+                $filename = basename($product->image);
+                if (Storage::disk('public')->exists("products/" . $filename)) {
+                    Storage::disk('public')->delete("products/" . $filename);
+                }
+
+                $uploadFolder = 'products';
+                $image = $request->file('image');
+                $image_uploaded_path = $image->store($uploadFolder, 'public');
+
+                $fields["image"] = Storage::url($image_uploaded_path);
+            }
+
             $product->update($fields);
             if (!$product) {
                 return ResponseFormator::create(501, "Internal Server Error");
@@ -84,6 +108,10 @@ class ProductController extends Controller
             return ResponseFormator::create(400, "Product ID doesn't match any product");
         }
         $product->delete();
+        $filename = basename($product->image);
+        if (Storage::disk('public')->exists("products/" . $filename)) {
+            Storage::disk('public')->delete("products/" . $filename);
+        }
         return ResponseFormator::create(200, 'Success');
     }
 }

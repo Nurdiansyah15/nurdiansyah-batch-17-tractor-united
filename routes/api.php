@@ -38,7 +38,7 @@ Route::middleware(['nurd.jwt'])->group(function () {
     Route::get('/products', [ProductController::class, 'findAll']);
     Route::get('/products/{id}', [ProductController::class, 'findById']);
     Route::post('/products', [ProductController::class, 'create']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
+    Route::post('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'delete']);
 
     Route::get('/transactions', [TransactionController::class, 'findAll']);

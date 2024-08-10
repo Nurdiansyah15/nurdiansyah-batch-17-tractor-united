@@ -66,16 +66,23 @@ class TransactionController extends Controller
                 'user_id' => 'numeric',
                 'quantity' => 'numeric'
             ]);
-            $product = Product::where('id', $fields['product_id'])->first();
-            if (!$product) {
-                return ResponseFormator::create(400, "Product ID doesn't match any product");
+            if (isset($fields['product_id'])) {
+                $product = Product::where('id', $fields['product_id'])->first();
+                if (!$product) {
+                    return ResponseFormator::create(400, "Product ID doesn't match any product");
+                }
+                $fields["amount"] = $product->price * $fields["quantity"];
             }
-            $user = User::where('id', $fields['user_id'])->first();
-            if (!$user) {
-                return ResponseFormator::create(400, "User ID doesn't match any user");
+            if (isset($fields['user_id'])) {
+                $user = User::where('id', $fields['user_id'])->first();
+                if (!$user) {
+                    return ResponseFormator::create(400, "User ID doesn't match any user");
+                }
             }
-            $fields["amount"] = $product->price * $fields["quantity"];
-            $transaction = Transaction::create($fields);
+            if (isset($fields['quantity'])) {
+                $fields["amount"] = $product->price * $fields["quantity"];
+            }
+            $transaction->update($fields);
             if (!$transaction) {
                 return ResponseFormator::create(501, "Internal Server Error");
             }
@@ -143,11 +150,15 @@ class TransactionController extends Controller
                 'product_id' => 'numeric',
                 'quantity' => 'numeric'
             ]);
-            $product = Product::where('id', $fields['product_id'])->first();
-            if (!$product) {
-                return ResponseFormator::create(400, "Product ID doesn't match any product");
+            if (isset($fields['product_id'])) {
+                $product = Product::where('id', $fields['product_id'])->first();
+                if (!$product) {
+                    return ResponseFormator::create(400, "Product ID doesn't match any product");
+                }
             }
-            $fields["amount"] = $product->price * $fields["quantity"];
+            if (isset($fields['quantity'])) {
+                $fields["amount"] = $product->price * $fields["quantity"];
+            }
             $transaction->update($fields);
             return ResponseFormator::create(200, "Success", $transaction);
         } catch (ValidationException $e) {

@@ -18,6 +18,7 @@
 -   Run commands: `php artisan migrate` for run migration.
 -   Run commands: `php artisan db:seed` for run seed.
 -   Run commands: `php artisan jwt:secret` for generate jwt secret key.
+-   Run commands: `php artisan storage:link` for link storage.
 
 ## Postman Documentation
 
