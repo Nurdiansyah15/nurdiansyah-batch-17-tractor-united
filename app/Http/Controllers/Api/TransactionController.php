@@ -94,23 +94,15 @@ class TransactionController extends Controller
         $transaction->delete();
         return ResponseFormator::create(200, 'Success');
     }
-
-
-    // Route::get('/user/transactions', [TransactionController::class, 'findAllUserTransactions']);
-    // Route::get('/user/transactions/{id}', [TransactionController::class, 'findUserTransactionById']);
-    // Route::post('/user/transactions', [TransactionController::class, 'createUserTransaction']);
-    // Route::put('/user/transactions/{id}', [TransactionController::class, 'updateUserTransaction']);
-    // Route::delete('/user/transactions/{id}', [TransactionController::class, 'deleteUserTransaction']);
-
     public function findAllUserTransactions()
     {
-        $transactions = Transaction::where('user_id', auth()->user()->id)->get();
+        $transactions = auth()->user()->transactions;
         return ResponseFormator::create(200, "Success", $transactions);
     }
 
     public function findUserTransactionById($id)
     {
-        $transaction = Transaction::where('user_id', auth()->user()->id)->where('id', $id)->first();
+        $transaction = auth()->user()->transactions->where('id', $id)->first();
         if (!$transaction) {
             return ResponseFormator::create(404, "Not Found");
         }
@@ -128,10 +120,7 @@ class TransactionController extends Controller
             if (!$product) {
                 return ResponseFormator::create(400, "Product ID doesn't match any product");
             }
-            $user = User::where('id', auth()->user()->id)->first();
-            if (!$user) {
-                return ResponseFormator::create(403, "Forbidden access");
-            }
+            $fields["user_id"] = auth()->user()->id;
             $fields["amount"] = $product->price * $fields["quantity"];
             $transaction = Transaction::create($fields);
             if (!$transaction) {
@@ -145,7 +134,7 @@ class TransactionController extends Controller
 
     public function updateUserTransaction($id, Request $request)
     {
-        $transaction = Transaction::where('user_id', auth()->user()->id)->where('id', $id)->first();
+        $transaction = auth()->user()->transactions->where('id', $id)->first();
         if (!$transaction) {
             return ResponseFormator::create(400, "Transaction ID doesn't match any transaction");
         }
@@ -158,10 +147,6 @@ class TransactionController extends Controller
             if (!$product) {
                 return ResponseFormator::create(400, "Product ID doesn't match any product");
             }
-            $user = User::where('id', auth()->user()->id)->first();
-            if (!$user) {
-                return ResponseFormator::create(403, "Forbidden access");
-            }
             $fields["amount"] = $product->price * $fields["quantity"];
             $transaction->update($fields);
             return ResponseFormator::create(200, "Success", $transaction);
@@ -172,11 +157,7 @@ class TransactionController extends Controller
 
     public function deleteUserTransaction($id)
     {
-        $user = User::where('id', auth()->user()->id)->first();
-        if (!$user) {
-            return ResponseFormator::create(403, "Forbidden access");
-        }
-        $transaction = Transaction::where('user_id', $user->id)->where('id', $id)->first();
+        $transaction = auth()->user()->transactions->where('id', $id)->first();
         if (!$transaction) {
             return ResponseFormator::create(400, "Transaction ID doesn't match any transaction");
         }
